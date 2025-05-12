@@ -76,7 +76,7 @@ const SidebarFilter = () => {
                 <SelectValue placeholder="Selecciona..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="30">< 30 días</SelectItem>
+                <SelectItem value="30">{"< 30 días"}</SelectItem>
                 <SelectItem value="60">30-60 días</SelectItem>
                 <SelectItem value="90">60-90 días</SelectItem>
                 <SelectItem value="more">+ 90 días</SelectItem>
