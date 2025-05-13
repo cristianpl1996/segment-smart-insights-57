@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Alert } from "@/components/ui/alert";
-import { DemographicZoom } from "@/components/ui/demographic-zoom";
+import DemographicZoom from "@/components/DemographicZoom";
 
 type SegmentStatus = 'ideal' | 'risk' | 'lost' | 'potential';
 
