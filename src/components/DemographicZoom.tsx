@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { X, Filter, Download, Send } from "lucide-react";
+import { X, Filter, Download, Send, Tag, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,6 +52,7 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
     channel: "all",
   });
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [savedFilter, setSavedFilter] = useState<boolean>(false);
   
   const handleAgeChange = (value: number[]) => {
     setFilters({ ...filters, age: value });
@@ -97,6 +98,11 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
     toast.success(`Etiquetando ${selectedUsers.length} usuarios`);
   };
   
+  const handleSaveFilter = () => {
+    setSavedFilter(true);
+    toast.success(`Filtro guardado como "Subsegmento de ${segmentName}"`);
+  };
+  
   // Filter users based on current filters
   const filteredUsers = users.filter(user => {
     return (
@@ -132,7 +138,7 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
         <div className="flex items-center justify-between p-4 border-b border-gray-800">
           <div className="flex items-center">
             <h2 className="text-xl font-sora font-extrabold text-white">
-              {segmentName}
+              Zoom demográfico: {segmentName}
             </h2>
             <Badge className={`ml-2 ${statusColors[segmentStatus]}`}>
               {statusNames[segmentStatus]}
@@ -225,6 +231,15 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
                   >
                     <Filter className="h-4 w-4 mr-1" />
                     Limpiar
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className={`border-light-blue text-light-blue hover:bg-light-blue/10 ${savedFilter ? 'bg-light-blue/10' : ''}`}
+                    onClick={handleSaveFilter}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    {savedFilter ? 'Filtro guardado' : 'Guardar filtro'}
                   </Button>
                 </div>
               </div>
@@ -408,12 +423,12 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
             <div className="bg-black/30 rounded-lg p-4 border border-gray-800 mb-4">
               <h3 className="text-lg font-semibold text-white mb-3">Crear Campaña</h3>
               <p className="text-sm text-gray-300 mb-4">
-                Envía una campaña personalizada a los {selectedUsers.length > 0 ? selectedUsers.length : 'todos los'} usuarios seleccionados.
+                Envía una campaña personalizada a los {selectedUsers.length > 0 ? selectedUsers.length : 'todos los'} usuarios seleccionados de {segmentName}.
               </p>
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-300 mb-2 block">Nombre de la campaña</Label>
-                  <Input placeholder="Nombre de la campaña" className="bg-gray-800 border-gray-600 text-white" />
+                  <Input placeholder={`Campaña para ${segmentName}`} className="bg-gray-800 border-gray-600 text-white" />
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-300 mb-2 block">Tipo de campaña</Label>
@@ -462,6 +477,7 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
                   className="w-full bg-gray-800 text-white hover:bg-gray-700"
                   onClick={handleTagUsers}
                 >
+                  <Tag className="h-4 w-4 mr-2" />
                   Etiquetar usuarios
                 </Button>
               </div>
