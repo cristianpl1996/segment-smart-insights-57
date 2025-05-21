@@ -6,7 +6,7 @@ import SegmentBubbleChart from "@/components/SegmentBubbleChart";
 import DashboardHeader from "@/components/DashboardHeader";
 
 const Index = () => {
-  const [activeView, setActiveView] = useState<'tree' | 'bubble'>('tree');
+  const [activeView, setActiveView] = useState<'tree' | 'bubble'>('bubble');
   
   return (
     <div className="min-h-screen flex bg-gradient-dashboard text-white">

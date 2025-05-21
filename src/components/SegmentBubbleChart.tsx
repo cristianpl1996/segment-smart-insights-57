@@ -1,46 +1,80 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Download, Filter, Save, Send, ArrowRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Download } from "lucide-react";
+import DemographicZoom from "./DemographicZoom";
 
-interface BubbleDataPoint {
-  name: string;
-  avgTicket: number;
-  frequency: number;
+interface SegmentData {
+  xValue: string;
+  yValue: number;
   users: number;
   status: 'ideal' | 'risk' | 'lost' | 'potential';
+  avgTicket: number;
   daysSinceLastPurchase: number;
   id: string;
 }
 
-// Sample data for the chart
-const bubbleData: BubbleDataPoint[] = [
-  // Ideal customers
-  { id: '1-1', name: 'Compradores frecuentes', avgTicket: 85.50, frequency: 4.2, users: 3250, status: 'ideal', daysSinceLastPurchase: 12 },
-  { id: '1-2', name: 'Ticket alto', avgTicket: 160.25, frequency: 1.5, users: 2170, status: 'ideal', daysSinceLastPurchase: 25 },
+// Sample data for the heatmap
+const generateHeatmapData = (): SegmentData[] => {
+  const data: SegmentData[] = [];
+  const yValues = [1, 2, 3, 4, 5]; // Frequency values
+  const xValues = ['<1', '1,2', '2,3', '4,4', '0,5', '4']; // Average order values
   
-  // At risk customers
-  { id: '2-1', name: 'Recencia en riesgo', avgTicket: 75.40, frequency: 2.1, users: 2350, status: 'risk', daysSinceLastPurchase: 45 },
-  { id: '2-2', name: 'Frecuencia en caída', avgTicket: 82.10, frequency: 1.2, users: 1490, status: 'risk', daysSinceLastPurchase: 30 },
-  
-  // Lost customers
-  { id: '3-1', name: 'Sin compras +180 días', avgTicket: 54.75, frequency: 0.8, users: 3100, status: 'lost', daysSinceLastPurchase: 210 },
-  { id: '3-2', name: 'Compradores únicos antiguos', avgTicket: 42.30, frequency: 1, users: 1100, status: 'lost', daysSinceLastPurchase: 190 },
-  
-  // Potential customers
-  { id: '4-1', name: 'Compradores recientes', avgTicket: 45.60, frequency: 1.1, users: 1980, status: 'potential', daysSinceLastPurchase: 15 },
-  { id: '4-2', name: 'Nuevos leads', avgTicket: 0, frequency: 0, users: 1860, status: 'potential', daysSinceLastPurchase: 0 },
-];
+  let id = 1;
 
-// Status colors for bubbles
+  for (const xValue of xValues) {
+    for (const yValue of yValues) {
+      // Determine status based on position
+      let status: 'ideal' | 'risk' | 'lost' | 'potential';
+      
+      if (xValue === '2,3' && (yValue === 3 || yValue === 4)) {
+        status = 'risk';
+      } else if (yValue >= 4 && (xValue === '4' || xValue === '0,5')) {
+        status = 'ideal';
+      } else if (yValue <= 2 && (xValue === '<1' || xValue === '1,2')) {
+        status = 'lost';
+      } else {
+        status = 'potential';
+      }
+      
+      // Generate users count (higher in some specific areas)
+      let users = Math.floor(Math.random() * 30) + 1;
+      if (xValue === '2,3' && yValue === 3) users = 32;
+      if (xValue === '2,3' && yValue === 4) users = 32;
+      if (xValue === '<1' && yValue === 1) users = 43;
+      if (xValue === '1,2' && yValue === 1) users = 31;
+      if (xValue === '1,2' && yValue === 2) users = 16;
+      if (xValue === '2,3' && yValue === 1) users = 22;
+      if (xValue === '4,4' && yValue === 1) users = 23;
+      if (xValue === '<1' && yValue === 2) users = 12;
+      if (xValue === '4,4' && yValue === 2) users = 10;
+      if (xValue === '1,2' && yValue === 3) users = 11;
+      if (xValue === '4,4' && yValue === 3) users = 6;
+      if (xValue === '<1' && yValue === 3) users = 6;
+      
+      data.push({
+        xValue,
+        yValue,
+        users,
+        status,
+        avgTicket: parseFloat(xValue.replace(',', '.').replace('<', '')) || 0.5,
+        daysSinceLastPurchase: Math.floor(Math.random() * 200) + 1,
+        id: `segment-${id++}`
+      });
+    }
+  }
+  
+  return data;
+};
+
+// Status colors for cells
 const statusColors = {
   ideal: '#4ade80',
   risk: '#ef4444',
   lost: '#94a3b8',
-  potential: '#3b82f6'
+  potential: '#f59e0b'
 };
 
 // Status names for legend
@@ -52,119 +86,92 @@ const statusNames = {
 };
 
 const SegmentBubbleChart = () => {
-  const [selectedData, setSelectedData] = useState<BubbleDataPoint[]>(bubbleData);
-  const [viewMode, setViewMode] = useState<'frequency' | 'recency'>('frequency');
-  const [selectedBubbles, setSelectedBubbles] = useState<string[]>([]);
+  const [heatmapData, setHeatmapData] = useState<SegmentData[]>(generateHeatmapData());
+  const [xAxis, setXAxis] = useState<'avgTicket' | 'recency'>('avgTicket');
+  const [yAxis, setYAxis] = useState<'frequency'>('frequency');
+  const [selectedCells, setSelectedCells] = useState<string[]>([]);
   const [filterType, setFilterType] = useState<string>('all');
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState<SegmentData | null>(null);
+  
+  // Calculate color intensity based on users count
+  const getColorIntensity = (users: number) => {
+    const max = Math.max(...heatmapData.map(d => d.users));
+    const intensity = Math.max(0.3, Math.min(1, users / max));
+    return intensity;
+  };
   
   const handleFilterChange = (value: string) => {
     setFilterType(value);
-    if (value === 'all') {
-      setSelectedData(bubbleData);
-    } else if (value === 'top5-size') {
-      // Top 5 by users count
-      setSelectedData([...bubbleData].sort((a, b) => b.users - a.users).slice(0, 5));
-    } else if (value === 'top5-risk') {
-      // All risk segments and top others by risk (days since last purchase)
-      const riskSegments = bubbleData.filter(d => d.status === 'risk');
-      const otherSegments = bubbleData.filter(d => d.status !== 'risk')
-                                     .sort((a, b) => b.daysSinceLastPurchase - a.daysSinceLastPurchase)
-                                     .slice(0, 5 - riskSegments.length);
-      setSelectedData([...riskSegments, ...otherSegments]);
-    } else if (value === 'top5-ticket') {
-      // Top 5 by average ticket
-      setSelectedData([...bubbleData].sort((a, b) => b.avgTicket - a.avgTicket).slice(0, 5));
-    }
+    // Filter implementation would go here
+    // For now, we'll just use the full dataset
   };
-
-  const handleBubbleClick = (data: BubbleDataPoint) => {
-    if (selectedBubbles.includes(data.id)) {
-      setSelectedBubbles(selectedBubbles.filter(id => id !== data.id));
+  
+  const handleCellClick = (segment: SegmentData) => {
+    setSelectedSegment(segment);
+    setIsDetailOpen(true);
+  };
+  
+  const handleCellSelect = (segment: SegmentData) => {
+    if (selectedCells.includes(segment.id)) {
+      setSelectedCells(selectedCells.filter(id => id !== segment.id));
     } else {
-      setSelectedBubbles([...selectedBubbles, data.id]);
+      setSelectedCells([...selectedCells, segment.id]);
     }
   };
-
+  
   const handleCompare = () => {
-    const selectedNames = selectedBubbles.map(id => 
-      bubbleData.find(item => item.id === id)?.name
+    const selectedNames = selectedCells.map(id => 
+      heatmapData.find(item => item.id === id)?.xValue + " / " + 
+      heatmapData.find(item => item.id === id)?.yValue
     ).filter(Boolean);
     toast.success(`Comparando segmentos: ${selectedNames.join(', ')}`);
   };
-
+  
   const handleExport = () => {
-    toast.success('Descargando gráfico como PNG');
+    toast.success('Descargando gráfico como Excel');
   };
-
-  const handleViewDetail = (data: BubbleDataPoint) => {
-    toast.success(`Viendo detalles de: ${data.name}`);
+  
+  const handleDetailClose = () => {
+    setIsDetailOpen(false);
+    setSelectedSegment(null);
   };
-
-  const handleCreateCampaign = (data: BubbleDataPoint) => {
-    toast.success(`Creando campaña para: ${data.name}`);
-  };
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-gray-900 p-3 border border-gray-700 rounded-md shadow-lg">
-          <p className="font-semibold text-white mb-1">{data.name}</p>
-          <p className="text-sm text-gray-300">Usuarios: {data.users.toLocaleString()}</p>
-          <p className="text-sm text-gray-300">Ticket promedio: ${data.avgTicket.toFixed(2)}</p>
-          {viewMode === 'frequency' ? (
-            <p className="text-sm text-gray-300">Frecuencia: {data.frequency.toFixed(1)}</p>
-          ) : (
-            <p className="text-sm text-gray-300">Días última compra: {data.daysSinceLastPurchase}</p>
-          )}
-          <p className="text-sm text-gray-300 mt-1 font-semibold">
-            Estado: <span style={{ color: statusColors[data.status] }}>{statusNames[data.status]}</span>
-          </p>
-          <div className="mt-2 pt-2 border-t border-gray-700 flex space-x-2">
-            <button 
-              onClick={() => handleViewDetail(data)}
-              className="text-xs px-2 py-1 bg-light-blue/20 hover:bg-light-blue/30 text-light-blue rounded"
-            >
-              Ver detalle
-            </button>
-            <button 
-              onClick={() => handleCreateCampaign(data)}
-              className="text-xs px-2 py-1 bg-cta-orange/90 hover:bg-cta-orange text-black rounded"
-            >
-              Crear campaña
-            </button>
-          </div>
-        </div>
-      );
+  
+  const handleAxisChange = (axis: string, value: string) => {
+    if (axis === 'x') {
+      setXAxis(value as 'avgTicket' | 'recency');
+    } else if (axis === 'y') {
+      setYAxis(value as 'frequency');
     }
-    return null;
   };
-
-  const renderLegend = (props: any) => {
-    const { payload } = props;
-    const uniqueStatuses = Array.from(new Set(selectedData.map(item => item.status)));
+  
+  // Create a 2D structure for the heatmap for easier rendering
+  const getHeatmapGrid = () => {
+    const xValues = ['<1', '1,2', '2,3', '4,4', '0,5', '4'];
+    const yValues = [5, 4, 3, 2, 1]; // Reversed for rendering top to bottom
     
-    return (
-      <div className="flex justify-center mb-4">
-        {uniqueStatuses.map((status) => (
-          <div key={status} className="flex items-center mx-3">
-            <div 
-              className="w-3 h-3 mr-1 rounded-full" 
-              style={{ backgroundColor: statusColors[status as keyof typeof statusColors] }} 
-            />
-            <span className="text-sm text-gray-300">
-              {statusNames[status as keyof typeof statusNames]}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
+    const grid: SegmentData[][] = [];
+    
+    for (const yValue of yValues) {
+      const row: SegmentData[] = [];
+      for (const xValue of xValues) {
+        const cell = heatmapData.find(d => d.xValue === xValue && d.yValue === yValue);
+        if (cell) {
+          row.push(cell);
+        }
+      }
+      grid.push(row);
+    }
+    
+    return grid;
   };
-
+  
+  const heatmapGrid = getHeatmapGrid();
+  
   return (
     <div className="bg-black/30 backdrop-blur-sm rounded-lg border border-gray-800 p-5 h-full">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-xl font-sora font-extrabold text-white">Visualización de Segmentos</h2>
+        <h2 className="text-xl font-sora font-extrabold text-white">Segmentación de Usuarios</h2>
         
         <div className="flex flex-wrap gap-4">
           <div>
@@ -174,28 +181,11 @@ const SegmentBubbleChart = () => {
               </SelectTrigger>
               <SelectContent className="bg-gray-900 border-gray-700">
                 <SelectItem value="all">Todos los segmentos</SelectItem>
-                <SelectItem value="top5-size">Top 5 por tamaño</SelectItem>
-                <SelectItem value="top5-risk">Top 5 por riesgo</SelectItem>
-                <SelectItem value="top5-ticket">Top 5 por ticket</SelectItem>
+                <SelectItem value="top-users">Top por usuarios</SelectItem>
+                <SelectItem value="top-risk">Segmentos en riesgo</SelectItem>
+                <SelectItem value="top-potential">Mayor potencial</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          
-          <div className="flex bg-gray-800 rounded-md">
-            <Button 
-              variant="ghost" 
-              className={`rounded-r-none ${viewMode === 'frequency' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
-              onClick={() => setViewMode('frequency')}
-            >
-              Frecuencia
-            </Button>
-            <Button 
-              variant="ghost" 
-              className={`rounded-l-none ${viewMode === 'recency' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
-              onClick={() => setViewMode('recency')}
-            >
-              Recencia
-            </Button>
           </div>
           
           <Button 
@@ -207,75 +197,150 @@ const SegmentBubbleChart = () => {
             Exportar
           </Button>
           
-          {selectedBubbles.length > 0 && (
+          {selectedCells.length > 0 && (
             <Button 
               className="bg-cta-orange text-black hover:bg-cta-orange/90"
               onClick={handleCompare}
             >
-              Comparar ({selectedBubbles.length})
+              Comparar ({selectedCells.length})
             </Button>
           )}
         </div>
       </div>
       
-      <div className="h-[500px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart
-            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-          >
-            <XAxis 
-              type="number" 
-              dataKey="avgTicket" 
-              name="Ticket promedio" 
-              domain={['auto', 'auto']}
-              label={{ value: 'Ticket Promedio ($)', position: 'bottom', style: { fill: '#94a3b8' } }}
-              tick={{ fill: '#94a3b8' }}
-              stroke="#4b5563"
-            />
-            <YAxis 
-              type="number" 
-              dataKey={viewMode === 'frequency' ? 'frequency' : 'daysSinceLastPurchase'} 
-              name={viewMode === 'frequency' ? 'Frecuencia' : 'Días última compra'} 
-              domain={['auto', 'auto']}
-              label={{ 
-                value: viewMode === 'frequency' ? 'Frecuencia' : 'Días última compra', 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { fill: '#94a3b8' } 
-              }}
-              tick={{ fill: '#94a3b8' }}
-              stroke="#4b5563"
-            />
-            <ZAxis 
-              type="number" 
-              dataKey="users" 
-              range={[400, 2000]} 
-              name="Usuarios" 
-            />
-            <Tooltip 
-              cursor={{ strokeDasharray: '3 3' }} 
-              wrapperStyle={{ zIndex: 100 }}
-              content={<CustomTooltip />} 
-            />
-            <Legend content={renderLegend} />
-            <Scatter 
-              name="Segmentos" 
-              data={selectedData} 
-              onClick={(data) => handleBubbleClick(data)}
-            >
-              {selectedData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={statusColors[entry.status]}
-                  fillOpacity={selectedBubbles.includes(entry.id) ? 1 : 0.6}
-                  stroke={selectedBubbles.includes(entry.id) ? '#ffffff' : 'none'}
-                  strokeWidth={2}
+      <div className="flex flex-col space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-gray-300 mb-2">X-axis</p>
+            <Select value={xAxis} onValueChange={(value) => handleAxisChange('x', value)}>
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectValue placeholder="Seleccionar variable X" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectItem value="avgTicket">Average order value</SelectItem>
+                <SelectItem value="recency">Recency (days)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <p className="text-gray-300 mb-2">Y-axis</p>
+            <Select value={yAxis} onValueChange={(value) => handleAxisChange('y', value)}>
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectValue placeholder="Seleccionar variable Y" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectItem value="frequency">Purchase frequency</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex justify-center mt-2">
+          <div className="flex items-center justify-between space-x-4">
+            {Object.entries(statusColors).map(([status, color]) => (
+              <div key={status} className="flex items-center">
+                <div 
+                  className="w-3 h-3 mr-1 rounded-sm" 
+                  style={{ backgroundColor: color }} 
                 />
-              ))}
-            </Scatter>
-          </ScatterChart>
-        </ResponsiveContainer>
+                <span className="text-sm text-gray-300">
+                  {statusNames[status as keyof typeof statusNames]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <div className="relative">
+            <div className="absolute -left-12 top-1/2 -translate-y-1/2 -rotate-90 text-gray-400 whitespace-nowrap">
+              Purchase frequency
+            </div>
+            
+            <div className="mx-auto">
+              <div className="flex flex-col">
+                {heatmapGrid.map((row, rowIndex) => (
+                  <div key={rowIndex} className="flex">
+                    <div className="flex items-center justify-center w-8 h-24 text-gray-400">
+                      {heatmapGrid.length - rowIndex}
+                    </div>
+                    {row.map((cell, cellIndex) => (
+                      <div 
+                        key={`${rowIndex}-${cellIndex}`}
+                        className={`
+                          flex items-center justify-center h-24 w-24 m-0.5 cursor-pointer 
+                          hover:ring-2 hover:ring-white transition-all duration-150
+                          ${selectedCells.includes(cell.id) ? 'ring-2 ring-white' : ''}
+                        `}
+                        style={{ 
+                          backgroundColor: statusColors[cell.status], 
+                          opacity: getColorIntensity(cell.users)
+                        }}
+                        onClick={() => handleCellClick(cell)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          handleCellSelect(cell);
+                        }}
+                      >
+                        <span className="text-xl font-semibold text-white">{cell.users}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                
+                <div className="flex mt-2">
+                  <div className="w-8"></div>
+                  {heatmapGrid[0].map((cell, index) => (
+                    <div key={index} className="flex items-center justify-center h-8 w-24 text-gray-400">
+                      {cell.xValue}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="text-center text-gray-400 mt-4">
+                {xAxis === 'avgTicket' ? 'Average order value' : 'Recency (days)'}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {selectedCells.length > 0 && (
+          <div className="bg-gray-800/50 p-3 rounded-md border border-gray-700 mt-4">
+            <div className="flex justify-between items-center">
+              <span className="text-white">
+                {selectedCells.length} segmentos seleccionados
+              </span>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="border-gray-600"
+                  onClick={() => setSelectedCells([])}
+                >
+                  Limpiar selección
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-cta-orange text-black hover:bg-cta-orange/90"
+                  onClick={handleCompare}
+                >
+                  Comparar segmentos
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+      
+      {isDetailOpen && selectedSegment && (
+        <DemographicZoom 
+          isOpen={isDetailOpen}
+          onClose={handleDetailClose}
+          segmentName={`Segmento ${selectedSegment.xValue}/${selectedSegment.yValue}`}
+          segmentStatus={selectedSegment.status}
+        />
+      )}
     </div>
   );
 };
