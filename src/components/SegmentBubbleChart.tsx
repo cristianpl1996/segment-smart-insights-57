@@ -5,6 +5,7 @@ import { Download, Filter, Save, Send, ArrowRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import DemographicZoom from "./DemographicZoom";
+import SegmentTooltipCard from "./SegmentTooltipCard";
 
 interface SegmentData {
   xValue: string;
@@ -93,6 +94,16 @@ const SegmentBubbleChart = () => {
   const [filterType, setFilterType] = useState<string>('all');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState<SegmentData | null>(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+  const [tooltipSegment, setTooltipSegment] = useState<SegmentData | null>(null);
+  const [totalUsers, setTotalUsers] = useState(0);
+  
+  useEffect(() => {
+    // Calculate total users for percentage calculation
+    const total = heatmapData.reduce((sum, segment) => sum + segment.users, 0);
+    setTotalUsers(total);
+  }, [heatmapData]);
   
   // Calculate color intensity based on users count
   const getColorIntensity = (users: number) => {
@@ -101,15 +112,35 @@ const SegmentBubbleChart = () => {
     return intensity;
   };
   
+  // Calculate percentage of total users
+  const getUserPercentage = (users: number) => {
+    return totalUsers > 0 ? Math.round((users / totalUsers) * 100) : 0;
+  };
+  
   const handleFilterChange = (value: string) => {
     setFilterType(value);
     // Filter implementation would go here
     // For now, we'll just use the full dataset
   };
   
-  const handleCellClick = (segment: SegmentData) => {
+  const handleCellClick = (segment: SegmentData, event: React.MouseEvent) => {
     setSelectedSegment(segment);
-    setIsDetailOpen(true);
+    setTooltipSegment(segment);
+    setTooltipVisible(true);
+    setTooltipPosition({ x: event.clientX, y: event.clientY });
+  };
+  
+  const handleCellMouseEnter = (segment: SegmentData, event: React.MouseEvent) => {
+    setTooltipSegment(segment);
+    setTooltipVisible(true);
+    setTooltipPosition({ x: event.clientX, y: event.clientY });
+  };
+  
+  const handleCellMouseLeave = () => {
+    // Add a small delay before hiding to allow users to move to the tooltip
+    setTimeout(() => {
+      setTooltipVisible(false);
+    }, 100);
   };
   
   const handleCellSelect = (segment: SegmentData) => {
@@ -135,6 +166,21 @@ const SegmentBubbleChart = () => {
   const handleDetailClose = () => {
     setIsDetailOpen(false);
     setSelectedSegment(null);
+  };
+  
+  const handleViewDetail = () => {
+    if (tooltipSegment) {
+      setSelectedSegment(tooltipSegment);
+      setIsDetailOpen(true);
+      setTooltipVisible(false);
+    }
+  };
+  
+  const handleCreateCampaign = () => {
+    if (tooltipSegment) {
+      toast.success(`Creando campaña para segmento ${tooltipSegment.xValue}/${tooltipSegment.yValue}`);
+      setTooltipVisible(false);
+    }
   };
   
   const handleAxisChange = (axis: string, value: string) => {
@@ -268,7 +314,7 @@ const SegmentBubbleChart = () => {
                       <div 
                         key={`${rowIndex}-${cellIndex}`}
                         className={`
-                          flex items-center justify-center h-24 w-24 m-0.5 cursor-pointer 
+                          relative flex items-center justify-center h-24 w-24 m-0.5 cursor-pointer 
                           hover:ring-2 hover:ring-white transition-all duration-150
                           ${selectedCells.includes(cell.id) ? 'ring-2 ring-white' : ''}
                         `}
@@ -276,13 +322,18 @@ const SegmentBubbleChart = () => {
                           backgroundColor: statusColors[cell.status], 
                           opacity: getColorIntensity(cell.users)
                         }}
-                        onClick={() => handleCellClick(cell)}
+                        onClick={(e) => handleCellClick(cell, e)}
+                        onMouseEnter={(e) => handleCellMouseEnter(cell, e)}
+                        onMouseLeave={handleCellMouseLeave}
                         onContextMenu={(e) => {
                           e.preventDefault();
                           handleCellSelect(cell);
                         }}
                       >
                         <span className="text-xl font-semibold text-white">{cell.users}</span>
+                        <span className="absolute bottom-1 right-1 text-[10px] text-white/70">
+                          {getUserPercentage(cell.users)}%
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -332,6 +383,20 @@ const SegmentBubbleChart = () => {
           </div>
         )}
       </div>
+      
+      {tooltipVisible && tooltipSegment && (
+        <SegmentTooltipCard
+          isVisible={tooltipVisible}
+          position={tooltipPosition}
+          segmentName={`Segmento ${tooltipSegment.xValue}/${tooltipSegment.yValue}`}
+          users={tooltipSegment.users}
+          avgTicket={tooltipSegment.avgTicket}
+          daysSinceLastPurchase={tooltipSegment.daysSinceLastPurchase}
+          status={tooltipSegment.status}
+          onDetailClick={handleViewDetail}
+          onCampaignClick={handleCreateCampaign}
+        />
+      )}
       
       {isDetailOpen && selectedSegment && (
         <DemographicZoom 
