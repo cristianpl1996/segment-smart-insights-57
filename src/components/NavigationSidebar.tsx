@@ -17,12 +17,15 @@ import {
   Zap
 } from "lucide-react";
 
+
 interface NavigationSidebarProps {
   activeView: 'tree' | 'bubble';
   setActiveView: (view: 'tree' | 'bubble') => void;
+  activeSection: string;
+  setActiveSection: (section: string) => void;
 }
 
-const NavigationSidebar = ({ activeView, setActiveView }: NavigationSidebarProps) => {
+const NavigationSidebar = ({ activeView, setActiveView, activeSection, setActiveSection }: NavigationSidebarProps) => {
   return (
     <div className="w-80 bg-sidebar border-r border-sidebar-border h-screen overflow-y-auto">
       <div className="p-6">
@@ -105,7 +108,15 @@ const NavigationSidebar = ({ activeView, setActiveView }: NavigationSidebarProps
                 className="pl-10 bg-sidebar-accent border-sidebar-border text-sidebar-foreground"
               />
             </div>
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start ${
+                activeSection === 'customers' 
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent'
+              }`}
+              onClick={() => setActiveSection('customers')}
+            >
               <Users className="h-4 w-4 mr-3" />
               Vista 360° de clientes
               <ChevronRight className="h-3 w-3 ml-auto" />
@@ -119,7 +130,15 @@ const NavigationSidebar = ({ activeView, setActiveView }: NavigationSidebarProps
             Agentes de IA
           </h2>
           <div className="space-y-2">
-            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
+            <Button 
+              variant="ghost" 
+              className={`w-full justify-start ${
+                activeSection === 'ai-agents' 
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent'
+              }`}
+              onClick={() => setActiveSection('ai-agents')}
+            >
               <Lightbulb className="h-4 w-4 mr-3 text-cta-orange" />
               Campañas sugeridas
               <Badge variant="secondary" className="ml-auto bg-cta-orange/20 text-cta-orange">3</Badge>
@@ -163,7 +182,16 @@ const NavigationSidebar = ({ activeView, setActiveView }: NavigationSidebarProps
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="w-full mt-3 text-light-blue hover:bg-light-blue/10">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`w-full mt-3 ${
+                activeSection === 'integrations' 
+                  ? 'bg-light-blue text-primary-foreground' 
+                  : 'text-light-blue hover:bg-light-blue/10'
+              }`}
+              onClick={() => setActiveSection('integrations')}
+            >
               <Settings2 className="h-3 w-3 mr-2" />
               Gestionar integraciones
             </Button>
