@@ -14,7 +14,8 @@ import {
   ChevronRight,
   AlertTriangle,
   Lightbulb,
-  Zap
+  Zap,
+  Map
 } from "lucide-react";
 
 
@@ -154,6 +155,26 @@ const NavigationSidebar = ({ activeView, setActiveView, activeSection, setActive
               <Badge variant="secondary" className="ml-auto bg-light-blue/20 text-light-blue">12</Badge>
             </Button>
           </div>
+        </div>
+
+        {/* Mapa de Cobertura */}
+        <div className="mb-8">
+          <h2 className="text-sm font-sora font-semibold text-sidebar-foreground mb-4 uppercase tracking-wider">
+            Cobertura de Campañas
+          </h2>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start ${
+              activeSection === 'coverage-map' 
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
+                : 'text-sidebar-foreground hover:bg-sidebar-accent'
+            }`}
+            onClick={() => setActiveSection('coverage-map')}
+          >
+            <Map className="h-4 w-4 mr-3 text-light-blue" />
+            Mapa de Cobertura
+            <ChevronRight className="h-3 w-3 ml-auto" />
+          </Button>
         </div>
 
         {/* Integraciones */}

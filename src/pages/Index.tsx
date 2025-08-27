@@ -9,6 +9,7 @@ import SalesHistoryView from "@/components/SalesHistoryView";
 import CustomerProfileView from "@/components/CustomerProfileView";
 import AIAgentsView from "@/components/AIAgentsView";
 import IntegrationsView from "@/components/IntegrationsView";
+import CoverageMapView from "@/components/CoverageMapView";
 
 const Index = () => {
   const [activeView, setActiveView] = useState<'tree' | 'bubble'>('bubble');
@@ -24,6 +25,8 @@ const Index = () => {
         return <AIAgentsView />;
       case 'integrations':
         return <IntegrationsView />;
+      case 'coverage-map':
+        return <CoverageMapView />;
       default:
         return (
           <>
