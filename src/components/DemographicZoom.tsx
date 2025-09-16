@@ -31,16 +31,16 @@ interface DemographicZoomProps {
 }
 
 const mockUsers: User[] = [
-  { id: 1, name: "Ana García", email: "ana@example.com", age: 34, gender: "F", city: "Madrid", lastPurchase: "2024-05-01", preferredChannel: "Web", purchaseCount: 5, totalSpent: 450.75 },
-  { id: 2, name: "Carlos Rodríguez", email: "carlos@example.com", age: 42, gender: "M", city: "Barcelona", lastPurchase: "2024-04-15", preferredChannel: "App", purchaseCount: 3, totalSpent: 320.50 },
-  { id: 3, name: "Lucía Fernández", email: "lucia@example.com", age: 28, gender: "F", city: "Valencia", lastPurchase: "2024-04-28", preferredChannel: "Web", purchaseCount: 7, totalSpent: 680.25 },
-  { id: 4, name: "Miguel López", email: "miguel@example.com", age: 39, gender: "M", city: "Madrid", lastPurchase: "2024-03-20", preferredChannel: "App", purchaseCount: 2, totalSpent: 150.00 },
-  { id: 5, name: "Laura Díaz", email: "laura@example.com", age: 31, gender: "F", city: "Sevilla", lastPurchase: "2024-05-05", preferredChannel: "Web", purchaseCount: 4, totalSpent: 390.75 },
-  { id: 6, name: "Javier Martínez", email: "javier@example.com", age: 45, gender: "M", city: "Barcelona", lastPurchase: "2024-04-10", preferredChannel: "App", purchaseCount: 6, totalSpent: 580.50 },
-  { id: 7, name: "Carmen Sánchez", email: "carmen@example.com", age: 29, gender: "F", city: "Madrid", lastPurchase: "2024-05-02", preferredChannel: "Web", purchaseCount: 3, totalSpent: 270.25 },
-  { id: 8, name: "David Pérez", email: "david@example.com", age: 37, gender: "M", city: "Valencia", lastPurchase: "2024-04-05", preferredChannel: "Email", purchaseCount: 5, totalSpent: 420.00 },
-  { id: 9, name: "Sara González", email: "sara@example.com", age: 33, gender: "F", city: "Sevilla", lastPurchase: "2024-04-22", preferredChannel: "App", purchaseCount: 4, totalSpent: 340.75 },
-  { id: 10, name: "Pablo Ruiz", email: "pablo@example.com", age: 40, gender: "M", city: "Madrid", lastPurchase: "2024-03-15", preferredChannel: "Web", purchaseCount: 2, totalSpent: 195.50 },
+  { id: 1, name: "Ana García", email: "ana@example.com", age: 34, gender: "F", city: "Bogotá", lastPurchase: "2024-05-01", preferredChannel: "Web", purchaseCount: 5, totalSpent: 450.75 },
+  { id: 2, name: "Carlos Rodríguez", email: "carlos@example.com", age: 42, gender: "M", city: "Medellín", lastPurchase: "2024-04-15", preferredChannel: "App", purchaseCount: 3, totalSpent: 320.50 },
+  { id: 3, name: "Lucía Fernández", email: "lucia@example.com", age: 28, gender: "F", city: "Cali", lastPurchase: "2024-04-28", preferredChannel: "Web", purchaseCount: 7, totalSpent: 680.25 },
+  { id: 4, name: "Miguel López", email: "miguel@example.com", age: 39, gender: "M", city: "Bogotá", lastPurchase: "2024-03-20", preferredChannel: "App", purchaseCount: 2, totalSpent: 150.00 },
+  { id: 5, name: "Laura Díaz", email: "laura@example.com", age: 31, gender: "F", city: "Barranquilla", lastPurchase: "2024-05-05", preferredChannel: "Web", purchaseCount: 4, totalSpent: 390.75 },
+  { id: 6, name: "Javier Martínez", email: "javier@example.com", age: 45, gender: "M", city: "Medellín", lastPurchase: "2024-04-10", preferredChannel: "App", purchaseCount: 6, totalSpent: 580.50 },
+  { id: 7, name: "Carmen Sánchez", email: "carmen@example.com", age: 29, gender: "F", city: "Bogotá", lastPurchase: "2024-05-02", preferredChannel: "Web", purchaseCount: 3, totalSpent: 270.25 },
+  { id: 8, name: "David Pérez", email: "david@example.com", age: 37, gender: "M", city: "Cali", lastPurchase: "2024-04-05", preferredChannel: "Email", purchaseCount: 5, totalSpent: 420.00 },
+  { id: 9, name: "Sara González", email: "sara@example.com", age: 33, gender: "F", city: "Barranquilla", lastPurchase: "2024-04-22", preferredChannel: "App", purchaseCount: 4, totalSpent: 340.75 },
+  { id: 10, name: "Pablo Ruiz", email: "pablo@example.com", age: 40, gender: "M", city: "Bogotá", lastPurchase: "2024-03-15", preferredChannel: "Web", purchaseCount: 2, totalSpent: 195.50 },
 ];
 
 const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: DemographicZoomProps) => {
@@ -194,8 +194,10 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todas</SelectItem>
-                      <SelectItem value="Madrid">Madrid</SelectItem>
-                      <SelectItem value="Barcelona">Barcelona</SelectItem>
+                      <SelectItem value="Bogotá">Bogotá</SelectItem>
+                      <SelectItem value="Medellín">Medellín</SelectItem>
+                      <SelectItem value="Cali">Cali</SelectItem>
+                      <SelectItem value="Barranquilla">Barranquilla</SelectItem>
                       <SelectItem value="Valencia">Valencia</SelectItem>
                       <SelectItem value="Sevilla">Sevilla</SelectItem>
                     </SelectContent>
