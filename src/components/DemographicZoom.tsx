@@ -17,6 +17,7 @@ interface User {
   age: number;
   gender: string;
   city: string;
+  producto: string;
   lastPurchase: string;
   preferredChannel: string;
   purchaseCount: number;
@@ -31,25 +32,26 @@ interface DemographicZoomProps {
 }
 
 const mockUsers: User[] = [
-  { id: 1, name: "Ana García", email: "ana@example.com", age: 34, gender: "F", city: "Bogotá", lastPurchase: "2024-05-01", preferredChannel: "Web", purchaseCount: 5, totalSpent: 450.75 },
-  { id: 2, name: "Carlos Rodríguez", email: "carlos@example.com", age: 42, gender: "M", city: "Medellín", lastPurchase: "2024-04-15", preferredChannel: "App", purchaseCount: 3, totalSpent: 320.50 },
-  { id: 3, name: "Lucía Fernández", email: "lucia@example.com", age: 28, gender: "F", city: "Cali", lastPurchase: "2024-04-28", preferredChannel: "Web", purchaseCount: 7, totalSpent: 680.25 },
-  { id: 4, name: "Miguel López", email: "miguel@example.com", age: 39, gender: "M", city: "Bogotá", lastPurchase: "2024-03-20", preferredChannel: "App", purchaseCount: 2, totalSpent: 150.00 },
-  { id: 5, name: "Laura Díaz", email: "laura@example.com", age: 31, gender: "F", city: "Barranquilla", lastPurchase: "2024-05-05", preferredChannel: "Web", purchaseCount: 4, totalSpent: 390.75 },
-  { id: 6, name: "Javier Martínez", email: "javier@example.com", age: 45, gender: "M", city: "Medellín", lastPurchase: "2024-04-10", preferredChannel: "App", purchaseCount: 6, totalSpent: 580.50 },
-  { id: 7, name: "Carmen Sánchez", email: "carmen@example.com", age: 29, gender: "F", city: "Bogotá", lastPurchase: "2024-05-02", preferredChannel: "Web", purchaseCount: 3, totalSpent: 270.25 },
-  { id: 8, name: "David Pérez", email: "david@example.com", age: 37, gender: "M", city: "Cali", lastPurchase: "2024-04-05", preferredChannel: "Email", purchaseCount: 5, totalSpent: 420.00 },
-  { id: 9, name: "Sara González", email: "sara@example.com", age: 33, gender: "F", city: "Barranquilla", lastPurchase: "2024-04-22", preferredChannel: "App", purchaseCount: 4, totalSpent: 340.75 },
-  { id: 10, name: "Pablo Ruiz", email: "pablo@example.com", age: 40, gender: "M", city: "Bogotá", lastPurchase: "2024-03-15", preferredChannel: "Web", purchaseCount: 2, totalSpent: 195.50 },
+  { id: 1, name: "Ana García", email: "ana@example.com", age: 34, gender: "F", city: "Bogotá", lastPurchase: "2024-05-01", preferredChannel: "Web", purchaseCount: 5, totalSpent: 450.75, producto: "Revancha" },
+  { id: 2, name: "Carlos Rodríguez", email: "carlos@example.com", age: 42, gender: "M", city: "Medellín", lastPurchase: "2024-04-15", preferredChannel: "App", purchaseCount: 3, totalSpent: 320.50, producto: "Baloto" },
+  { id: 3, name: "Lucía Fernández", email: "lucia@example.com", age: 28, gender: "F", city: "Cali", lastPurchase: "2024-04-28", preferredChannel: "Web", purchaseCount: 7, totalSpent: 680.25, producto: "Baloto Revancha" },
+  { id: 4, name: "Miguel López", email: "miguel@example.com", age: 39, gender: "M", city: "Bogotá", lastPurchase: "2024-03-20", preferredChannel: "App", purchaseCount: 2, totalSpent: 150.00, producto: "Miloto" },
+  { id: 5, name: "Laura Díaz", email: "laura@example.com", age: 31, gender: "F", city: "Barranquilla", lastPurchase: "2024-05-05", preferredChannel: "Web", purchaseCount: 4, totalSpent: 390.75, producto: "Color loto" },
+  { id: 6, name: "Javier Martínez", email: "javier@example.com", age: 45, gender: "M", city: "Medellín", lastPurchase: "2024-04-10", preferredChannel: "App", purchaseCount: 6, totalSpent: 580.50, producto: "Revancha" },
+  { id: 7, name: "Carmen Sánchez", email: "carmen@example.com", age: 29, gender: "F", city: "Bogotá", lastPurchase: "2024-05-02", preferredChannel: "Web", purchaseCount: 3, totalSpent: 270.25, producto: "Baloto" },
+  { id: 8, name: "David Pérez", email: "david@example.com", age: 37, gender: "M", city: "Cali", lastPurchase: "2024-04-05", preferredChannel: "Email", purchaseCount: 5, totalSpent: 420.00, producto: "Baloto Revancha" },
+  { id: 9, name: "Sara González", email: "sara@example.com", age: 33, gender: "F", city: "Barranquilla", lastPurchase: "2024-04-22", preferredChannel: "App", purchaseCount: 4, totalSpent: 340.75, producto: "Miloto" },
+  { id: 10, name: "Pablo Ruiz", email: "pablo@example.com", age: 40, gender: "M", city: "Bogotá", lastPurchase: "2024-03-15", preferredChannel: "Web", purchaseCount: 2, totalSpent: 195.50, producto: "Color loto" },
 ];
 
 const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: DemographicZoomProps) => {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [filters, setFilters] = useState({
-    age: [18, 65],
+    age: [18, 65] as number[],
     gender: "all",
     city: "all",
     channel: "all",
+    producto: "all"
   });
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [savedFilter, setSavedFilter] = useState<boolean>(false);
@@ -68,6 +70,10 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
   
   const handleChannelChange = (value: string) => {
     setFilters({ ...filters, channel: value });
+  };
+
+  const handleProductoChange = (value: string) => {
+    setFilters({ ...filters, producto: value });
   };
   
   const handleUserSelect = (userId: number) => {
@@ -109,7 +115,8 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
       (user.age >= filters.age[0] && user.age <= filters.age[1]) &&
       (filters.gender === "all" || user.gender === filters.gender) &&
       (filters.city === "all" || user.city === filters.city) &&
-      (filters.channel === "all" || user.preferredChannel === filters.channel)
+      (filters.channel === "all" || user.preferredChannel === filters.channel) &&
+      (filters.producto === "all" || user.producto === filters.producto)
     );
   });
 
@@ -218,7 +225,25 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
+                  </div>
+
+                  {/* Filtro de Producto */}
+                  <div>
+                    <Label className="text-sm font-medium text-gray-300 mb-2 block">Producto</Label>
+                    <Select value={filters.producto} onValueChange={handleProductoChange}>
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectValue placeholder="Todos los productos" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        <SelectItem value="all">Todos los productos</SelectItem>
+                        <SelectItem value="Revancha">Revancha</SelectItem>
+                        <SelectItem value="Baloto">Baloto</SelectItem>
+                        <SelectItem value="Baloto Revancha">Baloto Revancha</SelectItem>
+                        <SelectItem value="Miloto">Miloto</SelectItem>
+                        <SelectItem value="Color loto">Color loto</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
               
               <div className="mt-4 flex justify-between items-center">
                 <div className="text-sm text-gray-300">
@@ -229,7 +254,7 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
                     variant="outline"
                     size="sm"
                     className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                    onClick={() => setFilters({ age: [18, 65], gender: "all", city: "all", channel: "all" })}
+                    onClick={() => setFilters({ age: [18, 65], gender: "all", city: "all", channel: "all", producto: "all" })}
                   >
                     <Filter className="h-4 w-4 mr-1" />
                     Limpiar
@@ -263,9 +288,12 @@ const DemographicZoom = ({ isOpen, onClose, segmentName, segmentStatus }: Demogr
                       </div>
                     </th>
                     <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Edad</th>
+                    <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Producto</th>
                     <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Ciudad</th>
-                    <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Última compra</th>
                     <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Canal</th>
+                    <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Compras</th>
+                    <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Total</th>
+                    <th className="py-3 px-4 text-left text-sm text-gray-400 font-medium">Última compra</th>
                   </tr>
                 </thead>
                 <tbody>
